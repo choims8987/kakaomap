@@ -1,136 +1,156 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>학교 위치 지도</title>
+<meta charset="UTF-8">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f5f7fb;
-    }
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 30px 20px;
-    }
+<title>경기도 학교 지도</title>
 
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
+<style>
 
-    .description {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #555;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+}
 
-    #map {
-      width: 100%;
-      height: 600px;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    }
-  </style>
+.wrap {
+  max-width: 1200px;
+  margin: auto;
+  padding: 25px;
+}
 
-  <!-- 카카오맵 JavaScript API -->
-  <script
-    type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c1c66f3e22d9d8d47c4145688832070d&libraries=services">
-  </script>
+h1 {
+  text-align: center;
+}
+
+#map {
+  width: 100%;
+  height: 650px;
+  border-radius: 15px;
+}
+
+</style>
+
+
+<!-- ★ services 라이브러리 추가 -->
+
+<script
+  src="//dapi.kakao.com/v2/maps/sdk.js?appkey=여기에_JavaScript키&libraries=services">
+</script>
 
 </head>
 
+
 <body>
+
 
 <div class="wrap">
 
-  <h1>경기도 학교 위치 지도</h1>
+<h1>경기도 학교 운영 현황</h1>
 
-  <div class="description">
-    지도에서 학교 마커를 클릭하면 학교 정보를 확인할 수 있습니다.
-  </div>
-
-  <div id="map"></div>
+<div id="map"></div>
 
 </div>
 
+
 <script>
 
-  /*
-    1. 지도 생성
-  */
 
-  const mapContainer =
-    document.getElementById("map");
+/* =============================
 
-  const mapOption = {
+   1. 지도 생성
 
-    center:
-      new kakao.maps.LatLng(
-        37.4138,
-        127.5183
-      ),
-
-    level: 10
-  };
-
-  const map =
-    new kakao.maps.Map(
-      mapContainer,
-      mapOption
-    );
+============================= */
 
 
-  /*
-    2. 학교 데이터
+const mapContainer =
+  document.getElementById("map");
 
-    실제 사용할 때
-    학교명, 위도, 경도, 설명을
-    원하는 만큼 추가하면 됩니다.
-  */
 
-  const schools = [
+const mapOption = {
 
-     {
-    name: "대평중교",
-    address: "경기 수원시 장안구 정자동 871-1",
-    info: "AI 디지털 활용 운영학교"
-  },
+  // 경기도 중심 부근
+  center:
+    new kakao.maps.LatLng(
+      37.4138,
+      127.5183
+    ),
+
+  level: 10
+
+};
+
+
+const map =
+  new kakao.maps.Map(
+    mapContainer,
+    mapOption
+  );
+
+
+
+/* =============================
+
+   2. 학교 데이터
+
+   위도·경도 필요 없음
+
+============================= */
+
+
+const schools = [
+
   {
-    name: "양오중학교",
-    address: "경기 남양주시 오남읍 양지리 616-2",
-    info: "디지털 시민교육 운영학교"
+
+    name:
+      "A초등학교",
+
+    address:
+      "경기도 수원시 영통구 월드컵로 206",
+
+    info:
+      "AI 디지털 활용 운영학교"
+
   },
+
+
   {
-    name: "풍양중학교",
-    address: "경기도 남양주시 진접읍 해밀예당1로 109 풍양중학교",
-    info: "디지털튜터 운영학교"
+
+    name:
+      "B중학교",
+
+    address:
+      "경기도 성남시 분당구 판교역로 166",
+
+    info:
+      "디지털 시민교육 운영학교"
+
+  },
+
+
+  {
+
+    name:
+      "C고등학교",
+
+    address:
+      "경기도 용인시 수지구 포은대로 435",
+
+    info:
+      "디지털튜터 운영학교"
+
   }
 
-  ];
+];
 
 
-  /*
-    3. 학교별 마커 생성
-  */
 
-  schools.forEach(function(school) {
-
-    const markerPosition =
-      new kakao.maps.LatLng(
-        school.lat,
-        school.lng
-      );
-
-
- /* =============================
+/* =============================
 
    3. 주소 → 좌표 변환 객체
 
@@ -313,8 +333,9 @@ schools.forEach(function(school) {
 });
 
 
-
 </script>
 
+
 </body>
+
 </html>
