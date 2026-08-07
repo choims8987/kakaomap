@@ -53,6 +53,48 @@ h1 {
 
 <h1>경기도 학교 운영 현황</h1>
 
+<div style="text-align:center; margin-bottom:15px;">
+
+  <input
+    type="text"
+    id="schoolSearch"
+    placeholder="학교명을 입력하세요"
+    style="
+      width:260px;
+      padding:12px;
+      font-size:16px;
+      border:1px solid #ccc;
+      border-radius:8px;
+    "
+  >
+
+  <button
+    id="searchBtn"
+    style="
+      padding:12px 20px;
+      font-size:16px;
+      cursor:pointer;
+    "
+  >
+    검색
+  </button>
+
+  <div
+    id="searchMessage"
+    style="
+      margin-top:8px;
+      font-size:14px;
+    "
+  ></div>
+
+</div>
+
+
+
+
+
+      
+
 <div id="map"></div>
 
 </div>
@@ -168,6 +210,16 @@ const geocoder =
 
 ============================= */
 
+// 검색에 사용할 학교별 마커 정보 저장
+const schoolMarkers = [];
+
+// 현재 열린 정보창
+let currentInfoWindow = null;
+let currentMarker = null;
+
+
+
+      
 
 schools.forEach(function(school) {
 
@@ -286,6 +338,25 @@ let currentInfoWindow = null;
 
 // 현재 선택된 마커
 let currentMarker = null;
+
+// ★ 검색용으로 저장
+schoolMarkers.push({
+
+  name: school.name,
+  address: school.address,
+  info: school.info,
+  marker: marker,
+  infowindow: infowindow,
+  coords: coords
+
+});
+
+
+
+
+
+
+            
 kakao.maps.event.addListener(
   marker,
   "click",
@@ -366,7 +437,89 @@ kakao.maps.event.addListener(
 
   }
 );
+function searchSchool() {
 
+  const keyword =
+    document
+      .getElementById("schoolSearch")
+      .value
+      .trim();
+
+
+  const message =
+    document.getElementById(
+      "searchMessage"
+    );
+
+
+  if (keyword === "") {
+
+    message.textContent =
+      "학교명을 입력해주세요.";
+
+    return;
+  }
+
+
+  // 학교명 검색
+  const foundSchool =
+    schoolMarkers.find(function(school) {
+
+      return school.name
+        .toLowerCase()
+        .includes(
+          keyword.toLowerCase()
+        );
+
+    });
+
+
+  if (!foundSchool) {
+
+    message.textContent =
+      "해당 학교를 찾을 수 없습니다.";
+
+    return;
+  }
+
+
+  message.textContent =
+    foundSchool.name +
+    "을(를) 찾았습니다.";
+
+
+  // 기존 정보창 닫기
+  if (currentInfoWindow) {
+
+    currentInfoWindow.close();
+
+  }
+
+
+  // 해당 학교로 지도 이동
+  map.panTo(
+    foundSchool.coords
+  );
+
+
+  // 지도를 조금 확대
+  map.setLevel(4);
+
+
+  // 해당 학교 정보창 열기
+  foundSchool.infowindow.open(
+    map,
+    foundSchool.marker
+  );
+
+
+  currentInfoWindow =
+    foundSchool.infowindow;
+
+  currentMarker =
+    foundSchool.marker;
+
+}
 </script>
 
 
