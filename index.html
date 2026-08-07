@@ -77,12 +77,12 @@
 
 
   <!--
-    ★ YOUR_JAVASCRIPT_KEY를
-    본인의 카카오 JavaScript 키로 변경하세요.
+    YOUR_JAVASCRIPT_KEY 부분을
+    본인의 카카오 JavaScript 키로 바꾸세요.
   -->
 
   <script
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c1c66f3e22d9d8d47c4145688832070d&libraries=services">
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_JAVASCRIPT_KEY&libraries=services">
   </script>
 
 </head>
@@ -137,7 +137,6 @@ const mapContainer =
 
 const mapOption = {
 
-  // 경기도 중심 부근
   center:
     new kakao.maps.LatLng(
       37.4138,
@@ -158,7 +157,7 @@ const map =
 
 
 /* ==========================================
-   2. 카카오 장소검색 객체
+   2. 카카오 장소 검색 객체
 ========================================== */
 
 
@@ -168,7 +167,7 @@ const places =
 
 
 /* ==========================================
-   3. 현재 표시 중인 마커와 팝업
+   3. 현재 마커 / 정보창
 ========================================== */
 
 
@@ -179,45 +178,158 @@ let currentInfoWindow = null;
 
 
 /* ==========================================
-   4. 정보창 닫기
+   4. CSV에서 읽은 학교 설명 저장
+========================================== */
+
+
+const schoolDescriptions = {};
+
+
+
+/* ==========================================
+   5. CSV 불러오기
+========================================== */
+
+
+async function loadSchoolDescriptions() {
+
+  try {
+
+    const response =
+      await fetch("schools.csv");
+
+
+    const text =
+      await response.text();
+
+
+    const lines =
+      text
+        .trim()
+        .split(/\r?\n/);
+
+
+    /*
+      첫 번째 줄은
+
+      학교명,설명
+
+      이므로 제외
+    */
+
+
+    for (let i = 1; i < lines.length; i++) {
+
+
+      /*
+        첫 번째 쉼표만 기준으로 분리
+
+        설명 안에 쉼표가 들어가도
+        최대한 유지하기 위한 방식
+      */
+
+
+      const firstComma =
+        lines[i].indexOf(",");
+
+
+      if (firstComma === -1) {
+        continue;
+      }
+
+
+      const schoolName =
+        lines[i]
+          .substring(
+            0,
+            firstComma
+          )
+          .trim();
+
+
+      const description =
+        lines[i]
+          .substring(
+            firstComma + 1
+          )
+          .trim();
+
+
+      schoolDescriptions[schoolName] =
+        description;
+
+    }
+
+
+    console.log(
+      "학교 설명 불러오기 완료",
+      schoolDescriptions
+    );
+
+
+  } catch (error) {
+
+
+    console.error(
+      "schools.csv 불러오기 실패",
+      error
+    );
+
+
+  }
+
+}
+
+
+
+/* ==========================================
+   6. 정보창 닫기
 ========================================== */
 
 
 function closeInfoWindow() {
 
+
   if (currentInfoWindow) {
+
 
     currentInfoWindow.close();
 
     currentInfoWindow = null;
 
+
   }
+
 
 }
 
 
 
 /* ==========================================
-   5. 기존 마커 제거
+   7. 기존 마커 제거
 ========================================== */
 
 
 function removeMarker() {
 
+
   if (currentMarker) {
+
 
     currentMarker.setMap(null);
 
     currentMarker = null;
 
+
   }
+
 
 }
 
 
 
 /* ==========================================
-   6. 학교 검색
+   8. 학교 검색
 ========================================== */
 
 
@@ -237,8 +349,10 @@ function searchSchool() {
 
   if (input === "") {
 
+
     message.textContent =
       "학교명을 입력해주세요.";
+
 
     return;
 
@@ -246,18 +360,7 @@ function searchSchool() {
 
 
   /*
-    ★ 핵심
-
-    사용자가
-    신백현초등학교
-
-    라고 입력하면
-
-    실제 검색어는
-
-    경기도 신백현초등학교
-
-    가 됩니다.
+    경기도 학교 우선 검색
   */
 
 
@@ -275,11 +378,6 @@ function searchSchool() {
 
 
 
-  /*
-    카카오 장소 검색
-  */
-
-
   places.keywordSearch(
 
     keyword,
@@ -295,7 +393,7 @@ function searchSchool() {
 
         /*
           검색 결과 중
-          주소가 경기도인 장소만 선택
+          경기도 주소인 학교 찾기
         */
 
 
@@ -318,15 +416,12 @@ function searchSchool() {
 
 
 
-        /*
-          경기도 결과가 없을 경우
-        */
-
-
         if (!school) {
+
 
           message.textContent =
             "경기도 내에서 해당 학교를 찾을 수 없습니다.";
+
 
           return;
 
@@ -335,7 +430,7 @@ function searchSchool() {
 
 
         /*
-          학교 위치
+          학교 좌표
         */
 
 
@@ -367,21 +462,29 @@ function searchSchool() {
 
 
         /*
-          해당 학교로 지도 이동
+          지도 이동 및 확대
         */
 
 
-        map.panTo(
-          position
-        );
+        map.panTo(position);
+
+        map.setLevel(4);
+
 
 
         /*
-          확대
+          CSV 설명 찾기
+
+          정확한 학교명이 일치하면
+          설명을 가져옴
         */
 
 
-        map.setLevel(4);
+        const schoolDescription =
+          schoolDescriptions[
+            school.place_name
+          ] ||
+          "등록된 학교 설명이 없습니다.";
 
 
 
@@ -394,14 +497,16 @@ function searchSchool() {
 
           <div
             style="
-              padding:14px 18px;
-              min-width:200px;
+              padding:16px 18px;
+              min-width:240px;
+              max-width:320px;
+              line-height:1.5;
             "
           >
 
             <strong
               style="
-                font-size:17px;
+                font-size:18px;
               "
             >
 
@@ -409,12 +514,14 @@ function searchSchool() {
 
             </strong>
 
+
             <br><br>
+
 
             <span
               style="
                 font-size:13px;
-                color:#555;
+                color:#666;
               "
             >
 
@@ -424,6 +531,21 @@ function searchSchool() {
               }
 
             </span>
+
+
+            <br><br>
+
+
+            <div
+              style="
+                font-size:14px;
+                color:#333;
+              "
+            >
+
+              ${schoolDescription}
+
+            </div>
 
           </div>
 
@@ -446,7 +568,7 @@ function searchSchool() {
 
 
         /*
-          검색과 동시에 팝업 열기
+          정보창 열기
         */
 
 
@@ -460,11 +582,6 @@ function searchSchool() {
 
 
 
-        /*
-          안내문
-        */
-
-
         message.textContent =
           school.place_name +
           "을(를) 찾았습니다.";
@@ -472,10 +589,8 @@ function searchSchool() {
 
 
         /*
-          마커 클릭
-
-          팝업이 열려 있으면 닫고
-          닫혀 있으면 다시 열기
+          마커 클릭 시
+          정보창 열기 / 닫기
         */
 
 
@@ -526,11 +641,6 @@ function searchSchool() {
 
 
 
-      /*
-        검색 결과 없음
-      */
-
-
       else if (
 
         status ===
@@ -545,11 +655,6 @@ function searchSchool() {
 
       }
 
-
-
-      /*
-        기타 오류
-      */
 
 
       else {
@@ -572,7 +677,7 @@ function searchSchool() {
 
 
 /* ==========================================
-   7. 검색 버튼
+   9. 검색 버튼
 ========================================== */
 
 
@@ -589,7 +694,7 @@ document
 
 
 /* ==========================================
-   8. Enter 키 검색
+   10. Enter 키 검색
 ========================================== */
 
 
@@ -606,7 +711,9 @@ document
         event.key === "Enter"
       ) {
 
+
         searchSchool();
+
 
       }
 
@@ -618,7 +725,7 @@ document
 
 
 /* ==========================================
-   9. 지도 빈 곳 클릭
+   11. 지도 빈 곳 클릭
 
    → 팝업 닫기
 ========================================== */
@@ -632,11 +739,22 @@ kakao.maps.event.addListener(
 
   function() {
 
+
     closeInfoWindow();
+
 
   }
 
 );
+
+
+
+/* ==========================================
+   12. 페이지 시작 시 CSV 불러오기
+========================================== */
+
+
+loadSchoolDescriptions();
 
 
 </script>
