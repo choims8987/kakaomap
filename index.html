@@ -42,7 +42,7 @@
   <!-- 카카오맵 JavaScript API -->
   <script
     type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c1c66f3e22d9d8d47c4145688832070d">
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c1c66f3e22d9d8d47c4145688832070d&libraries=services">
   </script>
 
 </head>
@@ -98,26 +98,21 @@
 
   const schools = [
 
-    {
-      name: "경기초등학교",
-      lat: 37.2636,
-      lng: 127.0286,
-      info: "AI 디지털 활용 교육 운영학교"
-    },
-
-    {
-      name: "경기중학교",
-      lat: 37.3943,
-      lng: 126.9568,
-      info: "디지털 시민교육 운영학교"
-    },
-
-    {
-      name: "경기고등학교",
-      lat: 37.7381,
-      lng: 127.0337,
-      info: "디지털 창의역량교육 운영학교"
-    }
+     {
+    name: "대평중교",
+    address: "경기 수원시 장안구 정자동 871-1",
+    info: "AI 디지털 활용 운영학교"
+  },
+  {
+    name: "양오중학교",
+    address: "경기 남양주시 오남읍 양지리 616-2",
+    info: "디지털 시민교육 운영학교"
+  },
+  {
+    name: "풍양중학교",
+    address: "경기도 남양주시 진접읍 해밀예당1로 109 풍양중학교",
+    info: "디지털튜터 운영학교"
+  }
 
   ];
 
@@ -135,85 +130,189 @@
       );
 
 
-    /*
-      마커 생성
-    */
+ /* =============================
 
-    const marker =
-      new kakao.maps.Marker({
+   3. 주소 → 좌표 변환 객체
 
-        position:
-          markerPosition
-
-      });
+============================= */
 
 
-    marker.setMap(map);
+const geocoder =
+  new kakao.maps.services.Geocoder();
 
 
-    /*
-      학교 정보창 생성
-    */
 
-    const content = `
+/* =============================
 
-      <div
-        style="
-          padding:12px;
-          min-width:200px;
-          font-size:14px;
-        "
-      >
+   4. 각 학교 주소 검색
 
-        <strong
-          style="
-            font-size:16px;
-          "
-        >
-          ${school.name}
-        </strong>
-
-        <br><br>
-
-        ${school.info}
-
-      </div>
-
-    `;
+============================= */
 
 
-    const infowindow =
-      new kakao.maps.InfoWindow({
-
-        content:
-          content
-
-      });
+schools.forEach(function(school) {
 
 
-    /*
-      마커 클릭 시
-      학교 정보 표시
-    */
+  geocoder.addressSearch(
 
-    kakao.maps.event.addListener(
+    school.address,
 
-      marker,
+    function(result, status) {
 
-      "click",
 
-      function() {
+      /*
+        주소 검색 성공
+      */
 
-        infowindow.open(
-          map,
-          marker
+      if (
+        status ===
+        kakao.maps.services.Status.OK
+      ) {
+
+
+        /*
+          result[0].x = 경도
+          result[0].y = 위도
+        */
+
+
+        const coords =
+          new kakao.maps.LatLng(
+
+            result[0].y,
+
+            result[0].x
+
+          );
+
+
+
+        /*
+          마커 생성
+        */
+
+
+        const marker =
+          new kakao.maps.Marker({
+
+            map:
+              map,
+
+            position:
+              coords
+
+          });
+
+
+
+        /*
+          학교 정보창
+        */
+
+
+        const content = `
+
+          <div
+            style="
+              padding:12px;
+              width:220px;
+            "
+          >
+
+            <strong
+              style="
+                font-size:16px;
+              "
+            >
+
+              ${school.name}
+
+            </strong>
+
+            <br><br>
+
+            ${school.info}
+
+            <br><br>
+
+            <small>
+
+              ${school.address}
+
+            </small>
+
+          </div>
+
+        `;
+
+
+
+        const infowindow =
+          new kakao.maps.InfoWindow({
+
+            content:
+              content
+
+          });
+
+
+
+        /*
+          마커 클릭
+
+          → 학교 정보 표시
+        */
+
+
+        kakao.maps.event.addListener(
+
+          marker,
+
+          "click",
+
+          function() {
+
+            infowindow.open(
+              map,
+              marker
+            );
+
+          }
+
+        );
+
+
+      }
+
+
+
+      /*
+        주소 검색 실패
+      */
+
+
+      else {
+
+        console.log(
+
+          "주소 검색 실패:",
+
+          school.name,
+
+          school.address
+
         );
 
       }
 
-    );
 
-  });
+    }
+
+  );
+
+
+});
+
+
 
 </script>
 
