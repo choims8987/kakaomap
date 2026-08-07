@@ -281,24 +281,43 @@ schools.forEach(function(school) {
 
           → 학교 정보 표시
         */
+// 현재 열려 있는 정보창을 저장
+let currentInfoWindow = null;
+
+// 현재 선택된 마커
+let currentMarker = null;
+kakao.maps.event.addListener(
+  marker,
+  "click",
+  function() {
+
+    // 같은 마커를 다시 클릭한 경우
+    if (currentMarker === marker) {
+
+      infowindow.close();
+
+      currentInfoWindow = null;
+      currentMarker = null;
+
+      return;
+    }
 
 
-        kakao.maps.event.addListener(
+    // 다른 정보창이 열려 있으면 먼저 닫기
+    if (currentInfoWindow) {
+      currentInfoWindow.close();
+    }
 
-          marker,
 
-          "click",
+    // 새로운 정보창 열기
+    infowindow.open(map, marker);
 
-          function() {
+    currentInfoWindow = infowindow;
+    currentMarker = marker;
 
-            infowindow.open(
-              map,
-              marker
-            );
-
-          }
-
-        );
+  }
+);
+       
 
 
       }
@@ -331,7 +350,22 @@ schools.forEach(function(school) {
 
 
 });
+kakao.maps.event.addListener(
+  map,
+  "click",
+  function() {
 
+    if (currentInfoWindow) {
+
+      currentInfoWindow.close();
+
+      currentInfoWindow = null;
+      currentMarker = null;
+
+    }
+
+  }
+);
 
 </script>
 
